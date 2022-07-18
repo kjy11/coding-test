@@ -1,7 +1,7 @@
 package programmers;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * https://school.programmers.co.kr/learn/courses/30/lessons/42895?language=java
@@ -11,78 +11,70 @@ import java.util.List;
 public class Lessons_42895 {
     public int solution(int N, int number) {
         int answer = -1;
-        List<CaseSet> caseSets = new ArrayList<>();
+        CaseSet[] caseSets = new CaseSet[8];
 
         for (int count = 1; count < 9; count ++) {
             CaseSet caseSet = new CaseSet(number);
-            boolean flag = concatAsString(N, count, caseSet);
-            if (flag) {
+            concatAsString(N, count, caseSet);
+
+            for (int i = 0; i < count/ 2; i ++) {
+                pickXY(caseSets[count - i - 2], caseSets[i], caseSet);
+            }
+
+            if (caseSet.finish()) {
                 answer = count;
                 break;
             }
 
-            for (int i = 0; i < (caseSets.size() + 1)/ 2; i ++) {
-                if (pickXY(caseSets.get(caseSets.size() - i - 1), caseSets.get(i), caseSet)) {
-                    flag = true;
-                    break;
-                }
-            }
-
-            if (flag) {
-                answer = count;
-                break;
-            }
-
-            caseSets.add(caseSet);
+            caseSets[count - 1] = caseSet;
         }
         return answer;
     }
 
-    public boolean pickXY(CaseSet caseSet1, CaseSet caseSet2, CaseSet caseSet3) {
+    public void pickXY(CaseSet caseSet1, CaseSet caseSet2, CaseSet caseSet3) {
         for (Integer x : caseSet1.caseSet) {
             for (Integer y : caseSet2.caseSet) {
-                if (operation(x, y, caseSet3)) {
-                    return true;
-                }
+                operation(x, y, caseSet3);
             }
         }
-        return false;
     }
 
-    public boolean concatAsString(int N, int count, CaseSet caseSet) {
+    public void concatAsString(int N, int count, CaseSet caseSet) {
         int result = 0;
         for (int i = 0; i < count; i ++) {
-            result = result + (int) (N * Math.pow(10, i));
+            result = result * 10 + N;
         }
-        return caseSet.addAndCompare(result);
+        caseSet.add(result);
     }
 
-    public boolean operation(int x, int y, CaseSet caseSet) {
-        boolean result = caseSet.addAndCompare(x + y);
-        result = result || caseSet.addAndCompare(x * y);
-        result = result || caseSet.addAndCompare(x - y);
-        result = result || caseSet.addAndCompare(y - x);
+    public void operation(int x, int y, CaseSet caseSet) {
+        caseSet.add(x + y);
+        caseSet.add(x * y);
+        caseSet.add(x - y);
+        caseSet.add(y - x);
         if (x != 0) {
-            result = result || caseSet.addAndCompare(y / x);
+            caseSet.add(y / x);
         }
         if (y != 0) {
-            result = result || caseSet.addAndCompare(x / y);
+            caseSet.add(x / y);
         }
-        return result;
     }
 
     public static class CaseSet {
-        List<Integer> caseSet;
+        Set<Integer> caseSet;
         int number;
 
         public CaseSet(int number) {
-            caseSet = new ArrayList<>();
+            caseSet = new HashSet<>();
             this.number = number;
         }
 
-        boolean addAndCompare(int i) {
+        void add(int i) {
             caseSet.add(i);
-            return i == number;
+        }
+
+        boolean finish() {
+            return caseSet.contains(number);
         }
     }
 }
